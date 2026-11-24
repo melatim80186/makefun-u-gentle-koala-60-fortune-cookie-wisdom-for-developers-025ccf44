@@ -16,6 +16,10 @@ LINE = " ".join((_SETUP, _PUNCH))
 
 OUTPUT_PATH = "/output/entry.txt"
 
+# The gate allows at most 120 characters; keep the bound in one place so
+# the pre-write and post-write checks can never drift apart.
+MAX_CHARS = 120
+
 
 def main() -> None:
     text = LINE
@@ -27,7 +31,9 @@ def main() -> None:
     # Pre-write self-check: the gate wants UTF-8 text of 1-120
     # characters, not only whitespace, on a single line.
     encoded = text.encode("utf-8")
-    assert 1 <= len(text) <= 120, f"entry length {len(text)} outside 1-120"
+    assert 1 <= len(text) <= MAX_CHARS, (
+        f"entry length {len(text)} outside 1-{MAX_CHARS}"
+    )
     assert text.strip(), "entry is only whitespace"
     assert encoded.decode("utf-8") == text, "entry is not clean UTF-8"
     assert "\n" not in text, "entry must be a single line"
@@ -41,7 +47,9 @@ def main() -> None:
     with open(OUTPUT_PATH, "r", encoding="utf-8") as f:
         on_disk = f.read()
     assert on_disk == text, "entry.txt does not match the chosen line"
-    assert 1 <= len(on_disk) <= 120, "entry.txt length outside 1-120"
+    assert 1 <= len(on_disk) <= MAX_CHARS, (
+        f"entry.txt length outside 1-{MAX_CHARS}"
+    )
 
 
 if __name__ == "__main__":
